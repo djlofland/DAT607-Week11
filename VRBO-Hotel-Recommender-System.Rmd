@@ -29,9 +29,9 @@ header-includes:
 
 ```{r setup, include=FALSE, warning=F, message=F}
 knitr::opts_chunk$set(echo = TRUE)
-mydir = "C:/Users/Michael/Documents/GitHub/MY607/DAT607_Week11"
-setwd(mydir)
-knitr::opts_knit$set(root.dir = mydir)
+# mydir = "C:/Users/Michael/Documents/GitHub/MY607/DAT607_Week11"
+#setwd(mydir)
+#knitr::opts_knit$set(root.dir = mydir)
 ```
 
 # Discussion/Assignment 11 - Recommender Systems
@@ -69,10 +69,11 @@ VRBO/Homeaway connects property managers and homeowners with travelers who seek 
 
 #### Here are some excerpts from the HomeAway and VRBO websites which decribe their (now, united) mission:
 
-"**HomeAway.com** connects property managers and homeowners with travelers who seek the space, value and amenities of vacation rental homes. The site has the largest and most diverse selection of homes around the world, with more than 1 million listings across 120 countries. By listing your properties on HomeAway you can take advantage of a global network of 50 sites, including Vrbo, with over 750 million traveler visits each year. Property Managers can market to HomeAway's traveler audience via yearly subscriptions or via a pay-per-booking model. HomeAway's pricing models are flexible, allowing you to choose the listing option that meets your business needs, plus HomeAway offers discounts on bulk listing purchases. HomeAway's dedicated account management team is standing by to recommend strategies, maximize your marketing ROI, and help your business grow."
+> "**HomeAway.com** connects property managers and homeowners with travelers who seek the space, value and amenities of vacation rental homes. The site has the largest and most diverse selection of homes around the world, with more than 1 million listings across 120 countries. By listing your properties on HomeAway you can take advantage of a global network of 50 sites, including VRBO, with over 750 million traveler visits each year. Property Managers can market to HomeAway's traveler audience via yearly subscriptions or via a pay-per-booking model. HomeAway's pricing models are flexible, allowing you to choose the listing option that meets your business needs, plus HomeAway offers discounts on bulk listing purchases. HomeAway's dedicated account management team is standing by to recommend strategies, maximize your marketing ROI, and help your business grow."
 
-"In 1995, **Vrbo** introduced a new way for people to travel together, pairing homeowners with families and friends looking for places to stay. We were grounded in one purpose: To give people the space they need to drop the distractions of everyday life and simply be together. Since then, we’ve grown into a global community of homeowners and travelers, with unique properties in 190 countries around the world. Vrbo makes it easy and fun to book cabins, condos, beach houses and every kind of space in between.
-Vrbo is part of **Expedia Group** and offers homeowners and property managers exposure to over 750 million visits to Expedia Group sites each month."
+> "In 1995, **VRBO** introduced a new way for people to travel together, pairing homeowners with families and friends looking for places to stay. We were grounded in one purpose: To give people the space they need to drop the distractions of everyday life and simply be together. Since then, we’ve grown into a global community of homeowners and travelers, with unique properties in 190 countries around the world. VRBO makes it easy and fun to book cabins, condos, beach houses and every kind of space in between.
+
+VRBO is part of **Expedia Group** and offers homeowners and property managers exposure to over 750 million visits to Expedia Group sites each month."
 
 
 ### What are the key goals?
@@ -128,12 +129,12 @@ VRBO's recommendation engine differs from those of other firms, which typically 
 Train a [skip-gram sequence model](https://en.wikipedia.org/wiki/N-gram#Skip-gram) to capture a local embedding representation for each listing, then extrapolate latent embeddings for listings subject to the [Cold Start problem][Deferred Cold Start Link 1].
 
 ```{r getskipgramimagefile, echo=F,warning=F,message=F}
-skipgramfilename = paste0(mydir, "/images/Skip-Gram.JPG")
+skipgramfilename = paste0('.', "/images/Skip-Gram.JPG")
 ##!system(paste("ls -l ", skipgramfilename))
 ```
 
 <center><img src=`r skipgramfilename` width='600'></center>
-Source: Tomas Mikolov et.al., "Distributed Representations of Words and Phrases and their Compositionality",<https://arxiv.org/abs/1310.4546>
+*Source: Tomas Mikolov et.al., "Distributed Representations of Words and Phrases and their Compositionality",<https://arxiv.org/abs/1310.4546>*
 
 A [skip-gram](https://en.wikipedia.org/wiki/N-gram#Skip-gram) is an architecture for [word2vec](https://en.wikipedia.org/wiki/Word2vec) in which the model uses the current word to predict the surrounding window of context words, weighing nearby context words more heavily than more distant context words. 
 
@@ -146,13 +147,13 @@ Especially frequent items are downsampled using the inverse square root of the f
 
 In this context, the [Cold Start problem][Deferred Cold Start Link 2] refers to the situation when newly added rental properties have recently been added to the system, but no (or, few) user interactions have occurred which would allow the system to learn about the property in order to recommend it.
 
-To resolve the [Cold Start problem][Deferred Cold Start Link 2], the contextual information that relates destinations (or search terms) to the listings based on the booking information is leveraged.  Given latitude and longitude of the cold listing (for which we have no data), a beliefis formed about the proportion of demand driven from each of the search terms pertaining to related/nearby destinations.  Then the **destination embedding** from the earlier step is used to find the expected **listing embedding** for the cold listing.
+To resolve the [Cold Start problem][Deferred Cold Start Link 2], the contextual information that relates destinations (or search terms) to the listings based on the booking information is leveraged.  Given latitude and longitude of the cold listing (for which we have no data), a belief is formed about the proportion of demand driven from each of the search terms pertaining to related/nearby destinations.  Then the **destination embedding** from the earlier step is used to find the expected **listing embedding** for the cold listing.
 
 
 ### Stage 2:
 
 ```{r getDANimagefile, echo=F,warning=F,message=F}
-DANfilename = paste0(mydir, "/images/DeepAverageNetwork.JPG")
+DANfilename = paste0('.', "/images/DeepAverageNetwork.JPG")
 ##!system(paste("ls -l ", DANfilename))
 ```
 
@@ -160,7 +161,7 @@ Train a [Deep Average Network (DAN)](https://mlexplained.com/2018/05/11/paper-di
 stacked with *decoder and encoder layers* predicting purchase events to capture a given traveler’s embedding, or latent preference for listings embedding.
 
 <center><img src=`r DANfilename` width='600'></center>
-Source: Tomas Mikolov, "Efficient Estimation of Word Representations in Vector Space", <https://arxiv.org/abs/1301.3781>
+*Source: Tomas Mikolov, "Efficient Estimation of Word Representations in Vector Space", <https://arxiv.org/abs/1301.3781>*
 
 In the second stage, given the **listing’s embedding** from the previous stage we model **traveler embeddings** using a sandwiched encoder-decoder non-linear Relu function.     
 In contrast to relatively weak implicit view signals, in this stage we leverage strong booking signals as a target variable based on **historical traveler listing interaction**.
@@ -179,12 +180,12 @@ Additionally, VRBO can draw users to its website by bidding for advertisements w
 
 Here is an illustration of theconcept:
 ```{r getRetargetimagefile, echo=F,warning=F,message=F}
-Retargetfilename = paste0(mydir, "/images/Retargeting.JPG")
+Retargetfilename = paste0('.', "/images/Retargeting.JPG")
 #!system(paste("ls -l ", Retargetfilename))
 ```
 
 <center><img src=`r Retargetfilename` width='600'></center>
-Source: Meisam HejaziNia et al., "Slide deck: Deep Personalized Retargeting”, <https://www.slideshare.net/MeisamHejaziNia/readnet-vrbo-deep-personalized-retargeting-2>
+*Source: Meisam HejaziNia et al., "Slide deck: Deep Personalized Retargeting”, <https://www.slideshare.net/MeisamHejaziNia/readnet-vrbo-deep-personalized-retargeting-2>*
 
 
 
@@ -195,12 +196,12 @@ and explained in a
 
 Here is an illustration of their process:
 ```{r getDPRTimagefile, echo=F,warning=F,message=F}
-DPRTfilename = paste0(mydir, "/images/Deep-Personalized-Retargeting-System.JPG")
+DPRTfilename = paste0('.', "/images/Deep-Personalized-Retargeting-System.JPG")
 ##!system(paste("ls -l ", DPRTfilename))
 ```
 
 <center><img src=`r DPRTfilename` width='600'></center>
-Source: Meisam HejaziNia et al., “Deep Personalized Retargeting”, <https://arxiv.org/pdf/1907.02822>
+*Source: Meisam HejaziNia et al., “Deep Personalized Retargeting”, <https://arxiv.org/pdf/1907.02822>*
 
 
 
@@ -215,12 +216,12 @@ sessions for hotels in places such as French Alps, and viewed hotels in ski area
 Here is an illustration of such architecture:
 
 ```{r getHRNNimagefile, echo=F,warning=F,message=F}
-HRNNfilename = paste0(mydir, "/images/HRNN.JPG")
+HRNNfilename = paste0('.', "/images/HRNN.JPG")
 ##!system(paste("ls -l ", HRNNfilename))
 ```
 
 <center><img src=`r HRNNfilename` width='600'></center>
-Source: Massimo Quadrana et al., "Personalizing Session-based Recommendations with Hierarchical Recurrent Neural Networks", <https://arxiv.org/abs/1706.04148>
+*Source: Massimo Quadrana et al., "Personalizing Session-based Recommendations with Hierarchical Recurrent Neural Networks", <https://arxiv.org/abs/1706.04148>*
 
 
 
