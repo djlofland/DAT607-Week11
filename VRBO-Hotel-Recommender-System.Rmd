@@ -1,0 +1,251 @@
+---
+title: "VRBO Hotel Recommender System"
+author: "Team ADMJ: Avraham Adler, Donny Lofland, Michael Yampol, Jai Jeffries"
+date: "11/6/2019"
+output:
+  html_document:
+    highlight: pygments
+    theme: cerulean
+    toc: yes
+    toc_float: yes
+    toc_depth: 3
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+classoption: portrait
+editor_options:
+  chunk_output_type: inline
+header-includes: 
+- \usepackage{graphicx}
+- \usepackage{float}
+---
+
+<style>
+  .main-container {
+    max-width: 1200px !important;
+  }
+</style>
+---
+
+```{r setup, include=FALSE, warning=F, message=F}
+knitr::opts_chunk$set(echo = TRUE)
+mydir = "C:/Users/Michael/Documents/GitHub/MY607/DAT607_Week11"
+setwd(mydir)
+knitr::opts_knit$set(root.dir = mydir)
+```
+
+# Discussion/Assignment 11 - Recommender Systems
+
+## Assignment
+
+1. Perform a Scenario Design analysis as described below. Consider whether it makes sense for your selected recommender system to perform scenario design twice, once for the organization (e.g. Amazon.com) and once for the organization's customers.
+
+2. Attempt to reverse engineer what you can about the site, from the site interface and any available information that you can find on the Internet or elsewhere.
+
+3. Include specific recommendations about how to improve the site's recommendation capabilities going forward.
+
+4. Create your report using an R Markdown file, and create a discussion thread with a link to the GitHub repo where your Markdown file notebook resides. You are not expected to need to write code for this discussion assignment.
+
+
+
+## Recommender System
+
+We have chosen to examine the Vacation property rental recommendation system implemented by data scientists at [VRBO](http://www.vrbo.com) ("Vacation Rental By Owner"), an affiliate of [HOMEAWAY](http://www.homeaway.com),  which is now part of the [Expedia](http://www.expedia.com) travel group.    
+
+Recently a team member (M.Y.) attended a presentation given by the key VRBO data scientist behind their recommendation engine.  It appears that the usage of such engine extends across affiliated websites (e.g., Homeaway and VRBO appear to be nearly identical.)  Although there are also many similarities within the hotels booking section of their parent, Expedia (which also books flights, rental cars, etc,) here we will look just at the usage of this engine in the vacation rental market rather than the commercial hotel booking market.
+
+## Scenario Design 
+
+### Who are the target users?
+
+
+VRBO/Homeaway connects property managers and homeowners with travelers who seek the space, value and amenities of vacation rental homes rather than hotels. In a sense, VRBO competes with AirBnB, but they view their target customers differently.  VRBO's branding is known for high-end vacation properties, often in luxury locations, where the customer gets the use of the entire property for the duration of his/her contract.  In contrast, AirBnB arranges for rentals of both entire properties as well as individual rooms within a homeowner's dwelling, e.g., where the homeowner may be providing Breakfast in addition to the Bed (thus, the "BnB" in their name.)
+
+#### As such, for VRBO/Homeaway there are two sets of target users, each with differing needs and goals:
+
+1. Property managers and homeowners who seek to rent out their vacation homes to reputable guests.    
+
+2. Individuals who are interested in a private vacation rental rather than a hotel room.    
+
+#### Here are some excerpts from the HomeAway and VRBO websites which decribe their (now, united) mission:
+
+"**HomeAway.com** connects property managers and homeowners with travelers who seek the space, value and amenities of vacation rental homes. The site has the largest and most diverse selection of homes around the world, with more than 1 million listings across 120 countries. By listing your properties on HomeAway you can take advantage of a global network of 50 sites, including Vrbo, with over 750 million traveler visits each year. Property Managers can market to HomeAway's traveler audience via yearly subscriptions or via a pay-per-booking model. HomeAway's pricing models are flexible, allowing you to choose the listing option that meets your business needs, plus HomeAway offers discounts on bulk listing purchases. HomeAway's dedicated account management team is standing by to recommend strategies, maximize your marketing ROI, and help your business grow."
+
+"In 1995, **Vrbo** introduced a new way for people to travel together, pairing homeowners with families and friends looking for places to stay. We were grounded in one purpose: To give people the space they need to drop the distractions of everyday life and simply be together. Since then, we’ve grown into a global community of homeowners and travelers, with unique properties in 190 countries around the world. Vrbo makes it easy and fun to book cabins, condos, beach houses and every kind of space in between.
+Vrbo is part of **Expedia Group** and offers homeowners and property managers exposure to over 750 million visits to Expedia Group sites each month."
+
+
+### What are the key goals?
+
+#### As there are two sets of target users, each has a differing goal:   
+
+##### Homeowners
+
+1.  **Homeowners** seek to rent out their vacation home by listing it on various websites.  While the homeowner would like to obtain the highest possible rental rate which would be accepted by a renter, to optimize revenue, the homeowner would generally prefer to pay the lowest fees possible, both for listing the property as well as the customer bookings.  Additionally, the homeowner would generally prefer that their prospective renters be assessed the smallest possible fees by the intermediary.  As homeowners are competing with each other for priority in display of their listings, they seek optimal positioning of their property in front of users who are most likely to make a booking.
+
+##### When renting out a property, the owner/manager is naturally concerned about several risks:
+a. Is the guest reputable?  
+b. Will the guest be throwing a wild party at my property?  
+c. Will the guest cause damages which may exceed any damage deposit which I temporarily collect?
+d. Will the guest cause me embarrassment with regard to my neighbors?
+
+
+##### Prospective Renters
+2. The **prospective vacationer** seeks a property meeting various requirements, generally at the lowest possible price. In general, the renter seeks to pay the smallest possible fees to the intermediary.
+
+It can be much cheaper to stay in an apartment or home rented through an online service such as VRBO/HomeAway than a hotel. Not only that, you can often get a lot more room for your money, making these short-term rentals particularly cost effective for families. Plus, you’ll ordinarily have access to a kitchen of some type, so you can save money on eating at restaurants during your stay.
+
+##### Such customers are concerned about several risks:
+a. Is the property as advertised?  Are the photographs accurate?  Does the property have any defects which haven't been shared?
+b. Will the property actually be available at the time I show up for my reservation, and remain available for the agreed duration?
+c. Will I be safe at the property?
+d. Does the "owner" have the legal right to enter into this rental agreement?
+
+Among prospective renters, some users may ***already*** have a ***specific destination*** in mind, and are searching for an available property ***at a specific location***.  In this case, the system will present a set of properties which meet the user's search specifications.  However, the system's recommendation algorithm  will decide on which properties to present at the top of the list, making those the first items seen by the customer (unless the customer has specified a different sorting preference.)    
+
+However, other users ***may not yet have decided on a destination***.  The system has the opportunity to ***suggest a few potential destinations*** to the customer upon initial navigation to the website.  In such case, the system can ***recommend locations*** which may be of interest to the user.   If such a location results in the customer thinking "I haven't been there, this looks like a really {beautiful|interesting} place, why not take my next vacation to that place?"  the system has sold the customer on the macro perspective -- the destination.  Next it can pitch the customer on the micro perspective -- a specific booking at that destination.
+
+### How can the application help them accomplish their goals?
+
+The website enables    
+
+(1) the owners of properties to find prospective renters who are interested in coming to their location and renting a vacation property, and    
+
+(2) vacationers can be guided toward various destinations of interest, and then offered listings of available vacation properties available for rent at such location.
+
+The recommendation algorithm ensures that owner's properties will be presented to prospective customers who may have an interest in such destination.  From the perspective of vacationers, the destinations and properties which are presented must be interesting to the user, who otherwise  may not select a booking from the website and may pursue alternatives elsewhere.   However, through a methodology known as "retargeting", the ecosystem retains the ability to recognize prospective customers who didn't make any booking, and targets them with advertisements (displayed on unrelated internet pages in their web browser or other interactive applications) to induce them to return to the website.
+
+### Does it make sense to perform Scenario Design twice?
+
+Because the VRBO platform is a classic two-way market, performing Scenario Design twice is critical.  The platform depends upon both sellers (i.e., property owners) and buyers (i.e., prospective renters).  Without the avid participation of both, the platform would not succeed.  
+
+## Reverse Engineering
+
+VRBO's recommendation engine differs from those of other firms, which typically use collaborative filtering and content-based settings.  VRBO's model differs in that it is based on the **session based local embedding model**.
+
+### Stage 1: 
+
+Train a [skip-gram sequence model](https://en.wikipedia.org/wiki/N-gram#Skip-gram) to capture a local embedding representation for each listing, then extrapolate latent embeddings for listings subject to the [Cold Start problem][Deferred Cold Start Link 1].
+
+```{r getskipgramimagefile, echo=F,warning=F,message=F}
+skipgramfilename = paste0(mydir, "/images/Skip-Gram.JPG")
+##!system(paste("ls -l ", skipgramfilename))
+```
+
+<center><img src=`r skipgramfilename` width='600'></center>
+Source: Tomas Mikolov et.al., "Distributed Representations of Words and Phrases and their Compositionality",<https://arxiv.org/abs/1310.4546>
+
+A [skip-gram](https://en.wikipedia.org/wiki/N-gram#Skip-gram) is an architecture for [word2vec](https://en.wikipedia.org/wiki/Word2vec) in which the model uses the current word to predict the surrounding window of context words, weighing nearby context words more heavily than more distant context words. 
+
+Here, the skip-gram model attempts to predict listings $x_i$ surrounded by listings $x_{i−c}$ and $x_{i+c}$ viewed in a traveler session $s_k$ , based on the premise that traveler’s view of listings in the same session signals the similarity of those listings.     
+The training objective is to find the listing local representation that specifies surrounding most similar manifold.
+
+Two key issues to address include **sparsity** and **heterogeneity in views** per item.    
+Especially frequent items are downsampled using the inverse square root of the frequency, and listings with extrermely low frequency are removed.   
+
+
+In this context, the [Cold Start problem][Deferred Cold Start Link 2] refers to the situation when newly added rental properties have recently been added to the system, but no (or, few) user interactions have occurred which would allow the system to learn about the property in order to recommend it.
+
+To resolve the [Cold Start problem][Deferred Cold Start Link 2], the contextual information that relates destinations (or search terms) to the listings based on the booking information is leveraged.  Given latitude and longitude of the cold listing (for which we have no data), a beliefis formed about the proportion of demand driven from each of the search terms pertaining to related/nearby destinations.  Then the **destination embedding** from the earlier step is used to find the expected **listing embedding** for the cold listing.
+
+
+### Stage 2:
+
+```{r getDANimagefile, echo=F,warning=F,message=F}
+DANfilename = paste0(mydir, "/images/DeepAverageNetwork.JPG")
+##!system(paste("ls -l ", DANfilename))
+```
+
+Train a [Deep Average Network (DAN)](https://mlexplained.com/2018/05/11/paper-dissected-deep-unordered-composition-rivals-syntactic-methods-for-text-classification-explained/) 
+stacked with *decoder and encoder layers* predicting purchase events to capture a given traveler’s embedding, or latent preference for listings embedding.
+
+<center><img src=`r DANfilename` width='600'></center>
+Source: Tomas Mikolov, "Efficient Estimation of Word Representations in Vector Space", <https://arxiv.org/abs/1301.3781>
+
+In the second stage, given the **listing’s embedding** from the previous stage we model **traveler embeddings** using a sandwiched encoder-decoder non-linear Relu function.     
+In contrast to relatively weak implicit view signals, in this stage we leverage strong booking signals as a target variable based on **historical traveler listing interaction**.
+The **adaptive stochastic gradient descent method** is used to train the binary cross entropy of the neural networks.
+
+The final question to answer is how to combine the **traveler** and **listing embedding** for **personalized recommendations.**   
+This is a particularly challenging task as traveler embeddings is **non-linear projection** of listings embedding with a **different dimension.** 
+As a result, they are not in the same space to compute cosine similarity.
+(The authors defer discussion of this approach to their subsequent study.)
+
+
+
+### Re-targeting
+
+Additionally, VRBO can draw users to its website by bidding for advertisements when users are engaged in other activities in a web browser.  For prospective customers who have previously visited the site, but perhaps didn't purchase anything, VRBO can "retarget" them by displaying advertisements which are most likely to draw their interest.
+
+Here is an illustration of theconcept:
+```{r getRetargetimagefile, echo=F,warning=F,message=F}
+Retargetfilename = paste0(mydir, "/images/Retargeting.JPG")
+#!system(paste("ls -l ", Retargetfilename))
+```
+
+<center><img src=`r Retargetfilename` width='600'></center>
+Source: Meisam HejaziNia et al., "Slide deck: Deep Personalized Retargeting”, <https://www.slideshare.net/MeisamHejaziNia/readnet-vrbo-deep-personalized-retargeting-2>
+
+
+
+Such *Deep Personalized Re-targeting* is detailed in a [paper](https://arxiv.org/pdf/1907.02822.pdf) 
+and explained in a 
+[companion slide deck](https://www.slideshare.net/MeisamHejaziNia/readnet-vrbo-deep-personalized-retargeting-2) .
+
+
+Here is an illustration of their process:
+```{r getDPRTimagefile, echo=F,warning=F,message=F}
+DPRTfilename = paste0(mydir, "/images/Deep-Personalized-Retargeting-System.JPG")
+##!system(paste("ls -l ", DPRTfilename))
+```
+
+<center><img src=`r DPRTfilename` width='600'></center>
+Source: Meisam HejaziNia et al., “Deep Personalized Retargeting”, <https://arxiv.org/pdf/1907.02822>
+
+
+
+## Recommendations for Improvement
+
+One problem that the developers face is that in **Session-based recommenders**, recommendations are provided based only on the visitor’s interactions in the *current* session.  The goal is to propagate signals from "recent" sessions to the current one, for example by use of "cookies."
+
+The developers indicated that they are implementing a Hierarchical Recurrent Neural Network (HRNN) to improve their model.   In short, the HRNN learns a representation embedding from “recent” sessions to inform the current
+one.  For example, if you’re planning for a ski holiday, you have probably searched in previous recent
+sessions for hotels in places such as French Alps, and viewed hotels in ski areas. So, the algorithm would boost hotels in ski areas in the current session.
+
+Here is an illustration of such architecture:
+
+```{r getHRNNimagefile, echo=F,warning=F,message=F}
+HRNNfilename = paste0(mydir, "/images/HRNN.JPG")
+##!system(paste("ls -l ", HRNNfilename))
+```
+
+<center><img src=`r HRNNfilename` width='600'></center>
+Source: Massimo Quadrana et al., "Personalizing Session-based Recommendations with Hierarchical Recurrent Neural Networks", <https://arxiv.org/abs/1706.04148>
+
+
+
+## References
+
+
+Meisam HejaziNia et al., "Deep Personalized Retargeting", <https://arxiv.org/pdf/1907.02822.pdf>
+
+Meisam HejaziNia et al., “Slide deck: Deep Personalized Retargeting”, available at <https://www.slideshare.net/MeisamHejaziNia/readnet-vrbo-deep-personalized-retargeting-2>
+
+Tomas Mikolov et al., "Efficient Estimation of Word Representations in Vector Space", <https://arxiv.org/abs/1301.3781>
+
+Tomas Mikolov et al., "Distributed Representations of Words and Phrases and their Compositionality", <https://arxiv.org/abs/1310.4546>
+
+Pavlos Mitsoulis-Ntompos et al., "A Simple Deep Personalized Recommendation System", <https://arxiv.org/abs/1906.11336>
+
+Pavlos Mitsoulis-Ntompos, "Build a Hotel Recommender using Amazon Personalize - No PhD Required", slide deck from talk delivered at AWS Machine Learning Web Day, Nov 6, 2019
+
+Massimo Quadrana et al., "Personalizing Session-based Recommendations with Hierarchical Recurrent Neural Networks", <https://arxiv.org/abs/1706.04148>
+
+[Deferred Cold Start Link 1]: https://en.wikipedia.org/wiki/Cold_start_(computing)
+[Deferred Cold Start Link 2]: https://en.wikipedia.org/wiki/Cold_start_(computing)#New_item
+
+## Final Note
+
+This material, including the images used in this discussion as well as copies of the papers and slide decks referenced, are all hosted at <https://github.com/djlofland/DAT607_Week11> .
+
+The html knit version of this Rmarkdown file is available at <http://rpubs.com/myampol/VRBO-Hotel-Recommender-System>  .
