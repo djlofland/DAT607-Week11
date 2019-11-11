@@ -1,6 +1,6 @@
 ---
 title: "VRBO Hotel Recommender System"
-author: "Team ADMJ: Avraham Adler, Donny Lofland, Michael Yampol, Jai Jeffries"
+author: "Team ADMJ: Avraham Adler, Donny Lofland, Michael Yampol"
 date: "11/6/2019"
 output:
   html_document:
